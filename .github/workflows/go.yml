@@ -14,7 +14,7 @@ jobs:
       - name: Build
         run: go build -v ./...
       - name: run Test
-        run: go test -cover
+        run: go test gofiberMostCommonWords -cover
       - name: Upload site content
         uses: actions/upload-artifact@v2
         with:
