@@ -1,6 +1,5 @@
 # Gofiber - Most Common Words
 ![Coverage](https://img.shields.io/badge/Coverage-81.0%25-brightgreen)
-![Go](https://github.com/bariarviv/Gofiber-Most-Common-Words/workflows/CI/badge.svg)
 
 Service with 2 endpoints:
 1. **Post:** receives a string containing comma-separated words and processes it.
