@@ -4,62 +4,9 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/valyala/fasthttp"
-	"reflect"
 	"sync"
 	"testing"
 )
-
-// Test_insertToGlobalMap tests the insertToGlobalMap() function
-func Test_insertToGlobalMap(t *testing.T) {
-	// Initializes the AllWords global map
-	initGlobalMapTest()
-	tests := []struct {
-		name string
-		hist map[string]int
-		want map[string]int
-	}{
-		{"Inserts an empty map", map[string]int{}, map[string]int{}},
-		{
-			name: "Updates an existing word successfully",
-			hist: map[string]int{"a": 2, "d": 9},
-			want: map[string]int{"a": 3, "d": 9},
-		},
-		{
-			name: "Updates an existing word successfully",
-			hist: map[string]int{"g": 2, "z": 13, "w": 1},
-			want: map[string]int{"g": 2, "z": 16, "w": 1},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if insertToGlobalMap(tt.hist); !reflect.DeepEqual(tt.hist, tt.want) {
-				t.Errorf("insertToGlobalMap() = %v, want %v", tt.hist, tt.want)
-			}
-			printSyncMap(AllWords)
-		})
-	}
-}
-
-// Test_insertToTopN tests the insertToTopN() function
-func Test_insertToTopN(t *testing.T) {
-	// topTest = [TopNum]KV{{"a", 14}, {"z", 8}, {"d", 3}, {"y", 2}, {"f", 1}}
-	TopWords.TopKV = topTest
-	tests := []struct {
-		name string
-		hist map[string]int
-	}{
-		{"Inserts an empty map", map[string]int{}},
-		{"Does not update", map[string]int{"c": 1, "e": 1, "m": 1}},
-		{"Updates an existing word successfully", map[string]int{"b": 1, "d": 5}},
-		{"Inserts a new word successfully", map[string]int{"r": 1, "q": 15, "x": 1}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			insertToTopN(tt.hist)
-			TopWords.Print()
-		})
-	}
-}
 
 // Test_getMostCommonWordsHandler tests the getMostCommonWordsHandler() function
 func Test_getMostCommonWordsHandler(t *testing.T) {
@@ -90,6 +37,55 @@ func Test_getMostCommonWordsHandler(t *testing.T) {
 	}
 }
 
+// Test_insertToGlobalMap tests the insertToGlobalMap() function
+func Test_insertToGlobalMap(t *testing.T) {
+	// Initializes the AllWords global map
+	initGlobalMapTest()
+	tests := []struct {
+		name string
+		word string
+		val  int
+	}{
+		{"Inserts an empty word - not updated", "", 10},
+		{"Inserts a new word successfully", "t", 10},
+		{"Inserts a new word successfully", "k", 4},
+		{"Updates an existing word successfully", "a", 3},
+		{"Updates an existing word successfully", "z", 20},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			max, min := TopWords.GetMinMax()
+			t.Run(tt.name, func(t *testing.T) {
+				insertToGlobalMap(tt.word, tt.val, max, min)
+			})
+			printSyncMap(AllWords)
+		})
+	}
+}
+
+// Test_insertToTopN tests the insertToTopN() function
+func Test_insertToTopN(t *testing.T) {
+	// topTest = [TopNum]KV{{"a", 5}, {"z", 1}, {"d", 3}, {"y", 3}, {"f", 1}}
+	TopWords.TopKV = topTest
+	TopWords.Sort()
+	tests := []struct {
+		name string
+		word string
+		val  int
+	}{
+		{"Inserts an empty word - not updated", "", 5},
+		{"Does not update", TopWords.GetKey(0), TopWords.GetVal(0)},
+		{"Updates an existing word successfully", TopWords.GetKey(2), TopWords.GetVal(2) + 1},
+		{"Inserts a new word successfully", "t", 4},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			insertToTopN(tt.word, tt.val)
+			TopWords.Print()
+		})
+	}
+}
+
 // Test_getStrHandler tests the getStrHandler() function
 func Test_getStrHandler(t *testing.T) {
 	app := fiber.New()
@@ -113,7 +109,7 @@ func Test_getStrHandler(t *testing.T) {
 			if err := getStrHandler(tt.ctx); (err != nil) != tt.wantErr {
 				t.Errorf("getStrHandler() error = %v, wantErr %v", err, tt.wantErr)
 			} else {
-				t.Log(TopWords.ToString())
+				fmt.Println(TopWords.ToString())
 			}
 		})
 	}
@@ -122,9 +118,9 @@ func Test_getStrHandler(t *testing.T) {
 // initGlobalMapTest initializes the AllWords global map for testing
 func initGlobalMapTest() {
 	AllWords.Store("a", 1)
-	AllWords.Store("v", 16)
+	AllWords.Store("v", 2)
 	AllWords.Store("z", 3)
-	AllWords.Store("b", 7)
+	AllWords.Store("b", 1)
 	AllWords.Store("u", 5)
 }
 

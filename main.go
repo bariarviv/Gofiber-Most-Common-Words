@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"math"
 	"strings"
 	"sync"
 )
@@ -32,63 +33,74 @@ func getMostCommonWordsHandler(ctx *fiber.Ctx) error {
 
 // getStrHandler gets a string and processes it
 func getStrHandler(ctx *fiber.Ctx) error {
-	// Step 1: Gets the parameter from the raw body
+	max, min := TopWords.GetMinMax()
+	// Gets the parameter from the raw body
 	body := ctx.Body()
 	words := strings.Split(string(body), ",")
-	// Step 2: Creates a histogram for each word
+	// Creates a histogram for each word
 	hist := map[string]int{}
 	for _, word := range words {
+		if word == "" {
+			continue
+		}
 		if _, ok := hist[word]; ok {
 			hist[word] += 1
+			if hist[word] > max {
+				max = hist[word]
+			}
 		} else {
 			hist[word] = 1
 		}
 	}
-	// Step 3: Inserts/Updates all words to the AllWords global map
-	insertToGlobalMap(hist)
-	// Step 4: Inserts/Updates the most common words in the TopWords struct
-	insertToTopN(hist)
+	// Inserts/Updates all words to the AllWords global map and inserts/Updates the most common words in the TopWords
+	for word, val := range hist {
+		go insertToGlobalMap(word, val, max, min)
+	}
 	ctx.Status(fiber.StatusOK).SendString("All words uploaded!\n")
 	return nil
 }
 
 // insertToGlobalMap inserts/updates all words to the AllWords global map
-func insertToGlobalMap(hist map[string]int) {
-	// Step 1: For each word
-	for word, _ := range hist {
-		// Step 2: Checks if the word exists
-		if val, ok := AllWords.Load(word); ok {
-			// Updates the actual value of the word
-			count := val.(int) + hist[word]
-			AllWords.Store(word, count)
-			hist[word] = count
-		} else {
-			// Adds a new key to the global map
-			AllWords.Store(word, hist[word])
-		}
+func insertToGlobalMap(word string, val, max, min int) {
+	if word == "" {
+		return
 	}
+	if v, ok := AllWords.Load(word); ok {
+		val += v.(int)
+	}
+	// Adds/Updates the value of the word
+	AllWords.Store(word, val)
+
+	histFreq := 1
+	if val >= max {
+		histFreq = TopNum
+	} else if val > min {
+		histFreq = int(math.Ceil((float64(val-min)/float64(max-min))*4 + 1))
+	}
+	insertToTopN(word, histFreq)
 }
 
 // insertToTopN inserts/updates the most common words in the TopWords struct
-func insertToTopN(hist map[string]int) {
+func insertToTopN(word string, val int) {
+	if word == "" {
+		return
+	}
 	size := TopWords.Len() - 1
-	// Step 1: For each word
-	for word, _ := range hist {
-		val := hist[word]
-		// Step 2: Checks if the word exists in the slice
-		if idx := TopWords.Search(word); idx <= size {
+	// Checks if the word exists in the slice
+	if idx, v := TopWords.Search(word); idx <= size {
+		if val != v {
 			// Updates the value and sorts the slice
 			TopWords.UpdateVal(val, idx)
 			TopWords.Sort()
-			continue
 		}
-		// Step 3: Checks if the value is less than or equal to the smallest value in the slice
-		if val <= TopWords.GetVal(size) {
-			// Skips to the next word
-			continue
-		}
-		// Step 4: Updates the word in the last entry in the slice and sorts
-		TopWords.UpdateKV(word, val, size)
-		TopWords.Sort()
+		return
 	}
+	// Checks if the value is less than or equal to the smallest value in the slice
+	if val <= TopWords.GetVal(size) {
+		// Skips to the next word
+		return
+	}
+	// Updates the word in the last entry in the slice and sorts
+	TopWords.UpdateKV(word, val, size)
+	TopWords.Sort()
 }

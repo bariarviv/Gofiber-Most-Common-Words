@@ -62,6 +62,22 @@ func (t *TopN) GetVal(i int) int {
 	return t.TopKV[i].Val
 }
 
+// GetMinMax returns the min & max values
+func (t *TopN) GetMinMax() (max int, min int) {
+	t.Lock.RLock()
+	defer t.Lock.RUnlock()
+
+	max = t.GetVal(0)
+	if max == 0 {
+		max = 1
+	}
+	min = t.GetVal(t.Len() - 1)
+	if min == 0 {
+		min = 1
+	}
+	return max, min
+}
+
 // GetKV returns the KV struct
 func (t *TopN) GetKV() [TopNum]KV {
 	t.Lock.RLock()
@@ -92,18 +108,18 @@ func (t *TopN) UpdateVal(val, i int) {
 	t.TopKV[i].Val = val
 }
 
-// Search searches the key in the TopKV slice, if the key exists, returns
-// the key index, otherwise, returns the length of the TopKV slice - O(n)
-func (t *TopN) Search(key string) int {
+// Search searches the key in the TopKV slice, if the key exists, returns the
+// key index & val, otherwise, returns the length of the TopKV slice & 0 - O(n)
+func (t *TopN) Search(key string) (i int, val int) {
 	t.Lock.RLock()
 	defer t.Lock.RUnlock()
 
-	for i, _ := range t.TopKV {
+	for i, _ = range t.TopKV {
 		if t.TopKV[i].Key == key {
-			return i
+			return i, t.TopKV[i].Val
 		}
 	}
-	return TopNum
+	return TopNum, 0
 }
 
 // Sort sorts the TopKV slice by descending order - O(n*log(n))

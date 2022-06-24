@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var topTest = [TopNum]KV{{"a", 14}, {"z", 8}, {"d", 3}, {"y", 2}, {"f", 1}}
+var topTest = [TopNum]KV{{"a", 5}, {"z", 1}, {"d", 3}, {"y", 3}, {"f", 1}}
 
 // TestNewTopN tests the NewTopN() function
 func TestNewTopN(t *testing.T) {
@@ -61,7 +61,7 @@ func TestTopN_GetKey(t1 *testing.T) {
 		want  string
 	}{
 		{"Gets an empty key from New struct", sync.RWMutex{}, NewTopN(0).GetKV(), 0, ""},
-		{"Gets key successfully", sync.RWMutex{}, topTest, 2, "d"},
+		{"Gets key successfully", sync.RWMutex{}, topTest, 2, topTest[2].Key},
 		{"Out of range index - gets an empty key", sync.RWMutex{}, topTest, TopNum + 2, ""},
 	}
 	for _, tt := range tests {
@@ -87,7 +87,7 @@ func TestTopN_GetVal(t1 *testing.T) {
 		want  int
 	}{
 		{"Gets an empty value from New struct", sync.RWMutex{}, NewTopN(0).GetKV(), 0, 0},
-		{"Gets value successfully", sync.RWMutex{}, topTest, 2, 3},
+		{"Gets value successfully", sync.RWMutex{}, topTest, 2, topTest[2].Val},
 		{"Out of range index - gets -1", sync.RWMutex{}, topTest, TopNum + 2, -1},
 	}
 	for _, tt := range tests {
@@ -98,6 +98,36 @@ func TestTopN_GetVal(t1 *testing.T) {
 			}
 			if got := t.GetVal(tt.i); got != tt.want {
 				t1.Errorf("GetVal() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TestTopN_GetMinMax tests the GetMinMax() function
+func TestTopN_GetMinMax(t1 *testing.T) {
+	tests := []struct {
+		name    string
+		Lock    sync.RWMutex
+		TopKV   [TopNum]KV
+		wantMax int
+		wantMin int
+	}{
+		{"Gets min & max values from empty TopKV", sync.RWMutex{}, [TopNum]KV{}, 1, 1},
+		{"Gets min & max values successfully", sync.RWMutex{}, topTest, topTest[0].Val, topTest[TopNum-1].Val},
+	}
+	for _, tt := range tests {
+		t1.Run(tt.name, func(t1 *testing.T) {
+			t := &TopN{
+				Lock:  tt.Lock,
+				TopKV: tt.TopKV,
+			}
+			t.Sort()
+			gotMax, gotMin := t.GetMinMax()
+			if gotMax != tt.wantMax {
+				t1.Errorf("GetMinMax() gotMax = %v, want %v", gotMax, tt.wantMax)
+			}
+			if gotMin != tt.wantMin {
+				t1.Errorf("GetMinMax() gotMin = %v, want %v", gotMin, tt.wantMin)
 			}
 		})
 	}
@@ -143,6 +173,7 @@ func TestTopN_Print(t1 *testing.T) {
 				Lock:  tt.Lock,
 				TopKV: tt.TopKV,
 			}
+			t.Sort()
 			t.Print()
 		})
 	}
@@ -151,15 +182,16 @@ func TestTopN_Print(t1 *testing.T) {
 // TestTopN_Search tests the Search() function
 func TestTopN_Search(t1 *testing.T) {
 	tests := []struct {
-		name  string
-		Lock  sync.RWMutex
-		TopKV [TopNum]KV
-		key   string
-		want  int
+		name      string
+		Lock      sync.RWMutex
+		TopKV     [TopNum]KV
+		key       string
+		wantIndex int
+		wantVal   int
 	}{
-		{"Len of empty KV slice", sync.RWMutex{}, [TopNum]KV{}, "a", TopNum},
-		{"Success get KV slice", sync.RWMutex{}, topTest, "a", 0},
-		{"Success get KV slice", sync.RWMutex{}, topTest, "d", 2},
+		{"Len of empty KV slice", sync.RWMutex{}, [TopNum]KV{}, "a", TopNum, 0},
+		{"Success get KV slice", sync.RWMutex{}, topTest, topTest[0].Key, 0, topTest[0].Val},
+		{"Success get KV slice", sync.RWMutex{}, topTest, topTest[2].Key, 2, topTest[2].Val},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
@@ -167,8 +199,12 @@ func TestTopN_Search(t1 *testing.T) {
 				Lock:  tt.Lock,
 				TopKV: tt.TopKV,
 			}
-			if got := t.Search(tt.key); got != tt.want {
-				t1.Errorf("Search() = %v, want %v", got, tt.want)
+			gotIndex, gotVal := t.Search(tt.key)
+			if gotIndex != tt.wantIndex {
+				t1.Errorf("Search() gotIndex = %v, wantIndex %v", gotIndex, tt.wantIndex)
+			}
+			if gotVal != tt.wantVal {
+				t1.Errorf("Search() gotVal = %v, wantVal %v", gotVal, tt.wantVal)
 			}
 		})
 	}
@@ -182,11 +218,7 @@ func TestTopN_Sort(t1 *testing.T) {
 		TopKV [TopNum]KV
 	}{
 		{"Sorts an empty KV slice", sync.RWMutex{}, [TopNum]KV{}},
-		{
-			name:  "Gets KV slice successfully",
-			Lock:  sync.RWMutex{},
-			TopKV: [TopNum]KV{{"a", 3}, {"z", 8}, {"d", 2}, {"y", 1}, {"f", 19}},
-		},
+		{"Gets KV slice successfully", sync.RWMutex{}, topTest},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
@@ -210,9 +242,9 @@ func TestTopN_UpdateKV(t1 *testing.T) {
 		val   int
 		i     int
 	}{
-		{"Updates an empty TopKV slice", sync.RWMutex{}, [TopNum]KV{}, "a", 3, 0},
 		{"Out of range index - not updated", sync.RWMutex{}, [TopNum]KV{}, "a", 3, TopNum + 2},
-		{"Updates the TopKV slice successfully", sync.RWMutex{}, topTest, "r", 5, 0},
+		{"Updates an empty TopKV slice", sync.RWMutex{}, [TopNum]KV{}, "a", 3, 0},
+		{"Updates the TopKV slice successfully", sync.RWMutex{}, topTest, topTest[0].Key, 4, 0},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
@@ -221,6 +253,7 @@ func TestTopN_UpdateKV(t1 *testing.T) {
 				TopKV: tt.TopKV,
 			}
 			t.UpdateKV(tt.key, tt.val, tt.i)
+			t.Sort()
 			t.Print()
 		})
 	}
@@ -236,7 +269,7 @@ func TestTopN_UpdateVal(t1 *testing.T) {
 		i     int
 	}{
 		{"Updates the value in an empty TopKV slice", sync.RWMutex{}, [TopNum]KV{}, 3, 0},
-		{"Updates the value successfully", sync.RWMutex{}, topTest, 5, 0},
+		{"Updates the value successfully", sync.RWMutex{}, topTest, 2, 0},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
@@ -245,6 +278,8 @@ func TestTopN_UpdateVal(t1 *testing.T) {
 				TopKV: tt.TopKV,
 			}
 			t.UpdateVal(tt.val, tt.i)
+			t.Sort()
+			t.Print()
 		})
 	}
 }
