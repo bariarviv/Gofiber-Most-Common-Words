@@ -62,11 +62,11 @@ Service with 2 endpoints:
     [3] : 0
     [4] : 0
 === RUN   TestTopN_Print/Prints_successfully
- 	  [0] a: 5
-	  [1] d: 3
-	  [2] y: 3
-	  [3] z: 1
-	  [4] f: 1
+    [0] a: 5
+    [1] d: 3
+    [2] y: 3
+    [3] z: 1
+    [4] f: 1
 --- PASS: TestTopN_Print (0.00s)
     --- PASS: TestTopN_Print/Prints_an_empty_KV_slice (0.00s)
     --- PASS: TestTopN_Print/Prints_successfully (0.00s)
@@ -123,17 +123,17 @@ Service with 2 endpoints:
 
 === RUN   TestTopN_UpdateVal
 === RUN   TestTopN_UpdateVal/Updates_the_value_in_an_empty_TopKV_slice
-	  [0] : 3
-	  [1] : 0
-	  [2] : 0
-	  [3] : 0
-	  [4] : 0
+    [0] : 3
+    [1] : 0
+    [2] : 0
+    [3] : 0
+    [4] : 0
 === RUN   TestTopN_UpdateVal/Updates_the_value_successfully
-	  [0] d: 3
-	  [1] y: 3
-	  [2] a: 2
-	  [3] z: 1
-	  [4] f: 1
+    [0] d: 3
+    [1] y: 3
+    [2] a: 2
+    [3] z: 1
+    [4] f: 1
 --- PASS: TestTopN_UpdateVal (0.00s)
     --- PASS: TestTopN_UpdateVal/Updates_the_value_in_an_empty_TopKV_slice (0.00s)
     --- PASS: TestTopN_UpdateVal/Updates_the_value_successfully (0.00s)
@@ -152,51 +152,51 @@ Service with 2 endpoints:
 === RUN   Test_insertToGlobalMap
 === RUN   Test_insertToGlobalMap/Inserts_an_empty_word_-_not_updated
 === RUN   Test_insertToGlobalMap/Inserts_an_empty_word_-_not_updated/Inserts_an_empty_word_-_not_updated
-	  [0] key: z, value: 3
-	  [1] key: b, value: 1
-	  [2] key: u, value: 5
-	  [3] key: a, value: 1
-	  [4] key: v, value: 2
-	  Length: 5
+    [0] key: z, value: 3
+    [1] key: b, value: 1
+    [2] key: u, value: 5
+    [3] key: a, value: 1
+    [4] key: v, value: 2
+    Length: 5
 === RUN   Test_insertToGlobalMap/Inserts_a_new_word_successfully
 === RUN   Test_insertToGlobalMap/Inserts_a_new_word_successfully/Inserts_a_new_word_successfully
-	  [0] key: b, value: 1
-	  [1] key: u, value: 5
-	  [2] key: t, value: 10
-	  [3] key: a, value: 1
-	  [4] key: v, value: 2
-	  [5] key: z, value: 3
-	  Length: 6
+    [0] key: b, value: 1
+    [1] key: u, value: 5
+    [2] key: t, value: 10
+    [3] key: a, value: 1
+    [4] key: v, value: 2
+    [5] key: z, value: 3
+    Length: 6
 === RUN   Test_insertToGlobalMap/Inserts_a_new_word_successfully#01
 === RUN   Test_insertToGlobalMap/Inserts_a_new_word_successfully#01/Inserts_a_new_word_successfully
-	  [0] key: v, value: 2
-	  [1] key: z, value: 3
-	  [2] key: b, value: 1
-	  [3] key: u, value: 5
-	  [4] key: t, value: 10
-	  [5] key: k, value: 4
-	  [6] key: a, value: 1
-	  Length: 7
+    [0] key: v, value: 2
+    [1] key: z, value: 3
+    [2] key: b, value: 1
+    [3] key: u, value: 5
+    [4] key: t, value: 10
+    [5] key: k, value: 4
+    [6] key: a, value: 1
+    Length: 7
 === RUN   Test_insertToGlobalMap/Updates_an_existing_word_successfully
 === RUN   Test_insertToGlobalMap/Updates_an_existing_word_successfully/Updates_an_existing_word_successfully
-	  [0] key: t, value: 10
-	  [1] key: k, value: 4
-	  [2] key: a, value: 4
-	  [3] key: v, value: 2
-	  [4] key: z, value: 3
-	  [5] key: b, value: 1
-	  [6] key: u, value: 5
-	  Length: 7
+    [0] key: t, value: 10
+    [1] key: k, value: 4
+    [2] key: a, value: 4
+    [3] key: v, value: 2
+    [4] key: z, value: 3
+    [5] key: b, value: 1
+    [6] key: u, value: 5
+    Length: 7
 === RUN   Test_insertToGlobalMap/Updates_an_existing_word_successfully#01
 === RUN   Test_insertToGlobalMap/Updates_an_existing_word_successfully#01/Updates_an_existing_word_successfully
-	  [0] key: v, value: 2
-	  [1] key: z, value: 23
-	  [2] key: b, value: 1
-	  [3] key: u, value: 5
-	  [4] key: t, value: 10
-	  [5] key: k, value: 4
-	  [6] key: a, value: 4
-	  Length: 7
+    [0] key: v, value: 2
+    [1] key: z, value: 23
+    [2] key: b, value: 1
+    [3] key: u, value: 5
+    [4] key: t, value: 10
+    [5] key: k, value: 4
+    [6] key: a, value: 4
+    Length: 7
 --- PASS: Test_insertToGlobalMap (0.00s)
     --- PASS: Test_insertToGlobalMap/Inserts_an_empty_word_-_not_updated (0.00s)
         --- PASS: Test_insertToGlobalMap/Inserts_an_empty_word_-_not_updated/Inserts_an_empty_word_-_not_updated (0.00s)
@@ -211,29 +211,29 @@ Service with 2 endpoints:
 
 === RUN   Test_insertToTopN
 === RUN   Test_insertToTopN/Inserts_an_empty_word_-_not_updated
-	[0] a: 5
-	[1] d: 3
-	[2] y: 3
-	[3] z: 1
-	[4] f: 1
+    [0] a: 5
+    [1] d: 3
+    [2] y: 3
+    [3] z: 1
+    [4] f: 1
 === RUN   Test_insertToTopN/Does_not_update
-	[0] a: 5
-	[1] d: 3
-	[2] y: 3
-	[3] z: 1
-	[4] f: 1
+    [0] a: 5
+    [1] d: 3
+    [2] y: 3
+    [3] z: 1
+    [4] f: 1
 === RUN   Test_insertToTopN/Updates_an_existing_word_successfully
-	[0] a: 5
-	[1] y: 4
-	[2] d: 3
-	[3] z: 1
-	[4] f: 1
+    [0] a: 5
+    [1] y: 4
+    [2] d: 3
+    [3] z: 1
+    [4] f: 1
 === RUN   Test_insertToTopN/Inserts_a_new_word_successfully
-	[0] a: 5
-	[1] y: 4
-	[2] t: 4
-	[3] d: 3
-	[4] z: 1
+    [0] a: 5
+    [1] y: 4
+    [2] t: 4
+    [3] d: 3
+    [4] z: 1
 --- PASS: Test_insertToTopN (0.00s)
     --- PASS: Test_insertToTopN/Inserts_an_empty_word_-_not_updated (0.00s)
     --- PASS: Test_insertToTopN/Does_not_update (0.00s)
